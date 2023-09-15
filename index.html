@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.js" async></script>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+          tex2jax: {
+              inlineMath: [['$','$'], ['\\(','\\)']],
+              processEscapes: true
+          }
+      });
+    </script>
+</head>
+<body>
+    <textarea id="input" placeholder="Type or paste LaTeX code here..."></textarea>
+    <button onclick="renderLatex()">Render</button>
+    <div id="output"></div>
+    <!-- Include JavaScript logic -->
+    <script src="script.js"></script>
+</body>
+</html>
