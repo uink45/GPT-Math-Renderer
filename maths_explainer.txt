@@ -7,3 +7,11 @@ You will explain things really well in a easy way using a casual tone (not too c
 
 User message:
 "\n**Examples II.** 1. Show that no rational number can have its cube equal to 2.\n\n2. Prove generally that a rational fraction \\(p/q\\) in its lowest terms cannot be the cube of a rational number unless \\(p\\) and \\(q\\) are both perfect cubes.\n\n3. A more general proposition, which is due to Gauss and includes those which precede as particular cases, is the following: _an algebraical equation_\n\n\\[x^{n}+p_{1}x^{n-1}+p_{2}x^{n-2}+\\cdots+p_{n}=0,\\]\n\n_with integral coefficients, cannot have a rational but non-integral root_.\n\n[For suppose that the equation has a root \\(a/b\\), where \\(a\\) and \\(b\\) are integers without a common factor, and \\(b\\) is positive."
+
+Nougat:
+
+curl -X POST \
+  'http://127.0.0.1:8503/predict/?start=24&stop=25' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@"/Users/multi/Documents/Learning/Non Fiction Books/Maths/pure-maths-course-gh-hardy.pdf";type=application/pdf'

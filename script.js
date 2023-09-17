@@ -10,10 +10,11 @@ let textAreaArray = [];
  
 messages.push({
   "role": "system",
-  "content": document.getElementById('system-input').value
+  "content": `You will explain things really well in a easy way using a casual tone (not too casual). Before moving on to the next, you must ask the person if they are ready to move to the next. You must always reply in the format of LaTeX. Make sure you adhere to the following example in terms of formatting: \n\n"\\(x^{3}=2\\), \\(x^{4}=7\\)" \n\n\\"[-\\frac{a^{n}}{b}=p_{1}a^{n-1}+p_{2}a^{n-2}b+\\cdots+p_{n}b^{n-1},\\]"`
 });
 
 window.onload = () => {
+  document.getElementById('system-input').value = messages[0].content;
   addTextArea('chat-input');
 };
 
@@ -107,31 +108,26 @@ function autoResizeTextarea(evt) {
 
 sendButton.addEventListener('click', async () => {
   const chatInputs = document.getElementsByClassName('chat-input');
-  const systemInput = document.getElementById('system-input').value;
- 
+
   if(messages.some(message => message.role === 'system')){
-    messages.find(message => message.role === 'system').content = systemInput;
+    messages.find(message => message.role === 'system').content = document.getElementById('system-input').value;
   }
 
-  // Loop through all the chat inputs, only add those that don't already exist in the messages array
+  // check if there are any chat inputs that are not in the messages array
   for (let i = 0; i < chatInputs.length; i++) {
     const chatInput = chatInputs[i];
-    const chatInputContent = chatInput.innerHTML;
-
-    if (!messages.some(message => message.role === 'user' && message.content === chatInputContent)) {
-      messages.push({
+    if(chatInput.dataset.messageReference) {
+      chatInput.dataset.messageReference.content = chatInput.innerHTML;
+    } else if(!messages.some(message => message.role === 'user' && message.content === chatInput.innerHTML)) {
+      const message = {
         "role": "user",
-        "content": chatInputContent
-      });
+        "content": chatInput.innerHTML
+      };
+  
+      chatInput.dataset.messageReference = message;
+      messages.push(message);
     }
   }
-
-  // Remove duplicates in the messages array
-  messages = messages.filter((message, index, self) =>
-    index === self.findIndex((m) => (
-      m.role === message.role && m.content === message.content
-    ))
-  );
 
   const response = await fetchResponse(API_URL, API_KEY, messages);
 
