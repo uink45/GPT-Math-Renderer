@@ -1,17 +1,175 @@
-body, textarea, button { 
-    font-family: 'IBM Plex Sans', sans-serif; 
+body {
+    font-family: 'IBM Plex Sans', sans-serif;
     font-weight: 400;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 50px 20px;
+    background-color: #ffffff;
+    color: #414141;
 }
 
 textarea, button {
     font-size: 16px;
 }
 
-#input { 
-    width: 100%; 
-    height: 100px; 
+.container {
+    position: relative;
+    text-align: center;
+    width: 95%;
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 30px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    border-radius: 8px;
 }
 
-#output { 
-    margin-top: 1em; 
+#system-input {
+    width: 90%;
+    height: 150px;
+    display: block;
+    margin: 0 auto;
+    resize: none;
+    padding: 20px;
+    border: none;
+    border-radius: 4px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    box-shadow: 0px 4px 12px 0px rgba(0,0,0,0.1);
+    line-height: 1.6;
+    text-align: left;
+    margin-bottom: 2em;
+}
+
+.chat-input {
+    width: 100%;
+    padding: 20px;
+    border-radius: 4px;
+    background-color: #f6f6f6;
+    line-height: 1.6;
+    font-family: 'IBM Plex Sans', sans-serif;
+    text-align: left;
+    resize: none; /* Important to turn off browser default resize functionality */
+    border: none;
+    margin-bottom: 3px;
+    overflow-y: auto; /* Depends if you want scrollbar or not */
+    white-space: pre-wrap; /* Important for maintaining line breaks in user input */
+    word-wrap: break-word;
+    box-sizing: border-box;
+    vertical-align: top;
+  }
+
+.chat-output {
+    width: 100%;
+    margin-top: 1em;
+    padding: 20px;
+    border-radius: 4px;
+    background-color: #F7F2F2;
+    resize: none;
+    line-height: 1.6;
+    font-family: 'IBM Plex Sans', sans-serif;
+    text-align: left;
+    border: none;
+    margin: 0 auto;
+    margin-bottom: 3px;
+}
+
+#sidebox {
+    position: absolute;
+    top: 35%;
+    margin-left: 850px;
+    width: 200px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    display: none;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.input-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.styled-button { 
+    margin-left: 10px; 
+    background-color: #626262;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  
+  .styled-button:hover {
+    background-color: #474747;
+  }
+
+  textarea {
+    font-size: 16px;
+    overflow: hidden;
+    resize: none;
+}
+
+.chat-input, .chat-output {
+    overflow-y: hidden; 
+}
+
+@media screen and (max-width: 800px) {
+    .container {
+        width: 100%;
+        padding: 20px;
+    }
+
+    #input, #output {
+        box-sizing: border-box;
+    }
+}
+
+.textarea-container {
+    position: relative;
+    width: 90%;
+    margin: 0 auto 1em auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+}
+
+textarea {
+    width: calc(100% - 50px); 
+    flex-grow: 1;
+    margin: 0;
+}
+
+.delete-button {
+    position: absolute;
+    right: -50px; 
+    top: 45%;
+    height: fit-content;
+    transform: translateY(-50%);
+    background-color: #626262;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    width: 35px;
+}
+
+.delete-button:hover {
+    background-color: #474747;
 }

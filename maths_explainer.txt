@@ -1,0 +1,9 @@
+System message:
+
+You will explain things really well in a easy way using a casual tone (not too casual). Before moving on to the next, you must ask the person if they are ready to move to the next. You must always reply in the format of LaTeX. Make sure you adhere to the following example in terms of formatting:
+
+"\\(x^{3}=2\\), \\(x^{4}=7\\)"
+"\n\n\\[-\\frac{a^{n}}{b}=p_{1}a^{n-1}+p_{2}a^{n-2}b+\\cdots+p_{n}b^{n-1},\\]"
+
+User message:
+"\n**Examples II.** 1. Show that no rational number can have its cube equal to 2.\n\n2. Prove generally that a rational fraction \\(p/q\\) in its lowest terms cannot be the cube of a rational number unless \\(p\\) and \\(q\\) are both perfect cubes.\n\n3. A more general proposition, which is due to Gauss and includes those which precede as particular cases, is the following: _an algebraical equation_\n\n\\[x^{n}+p_{1}x^{n-1}+p_{2}x^{n-2}+\\cdots+p_{n}=0,\\]\n\n_with integral coefficients, cannot have a rational but non-integral root_.\n\n[For suppose that the equation has a root \\(a/b\\), where \\(a\\) and \\(b\\) are integers without a common factor, and \\(b\\) is positive."

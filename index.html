@@ -6,18 +6,29 @@
     <link rel="stylesheet" href="styles.css">
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({
-          tex2jax: {
-              inlineMath: [['$','$'], ['\\(','\\)']],
-              processEscapes: true
-          }
+        tex2jax: {
+          inlineMath: [['$','$'], ['\\(','\\)']],
+          processEscapes: true
+        }
       });
     </script>
 </head>
 <body>
-    <textarea id="input" placeholder="Type or paste LaTeX code here..."></textarea>
-    <button onclick="renderLatex()">Render</button>
-    <div id="output"></div>
-    <!-- Include JavaScript logic -->
-    <script src="script.js"></script>
+  <div class="main-container">
+    <div class="container" id="container">
+        <textarea id="system-input"></textarea>
+        <div id="sidebox">
+            <h3>Settings</h3>
+            <p>Model</p>
+            <p>Count</p>
+        </div>
+    </div>
+    <div class="input-wrapper"> 
+      <button class="styled-button" id="addInputButton">Add Input</button>
+      <button class="styled-button" id="addOutputButton">Add Output</button>
+      <button class="styled-button" id="sendButton">Send</button> 
+    </div>  
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
