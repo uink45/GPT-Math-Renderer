@@ -100,59 +100,56 @@ slider.addEventListener("click", function() {
 function autoExpand(element) {
     // Only adjust the height if there's an overflow
     if (element.scrollHeight > element.clientHeight) {
-        element.style.height = element.scrollHeight + 'px';
+        element.style.height = element.scrollHeight + 2 + 'px';
     }
 }
+
 function createNewTextArea(role, defaultText = '') {
-    let textarea = document.createElement('textarea');
-    let textareaWrapper = document.createElement('div'); 
+    let newElement = document.createElement('div');
+    let newElementWrapper = document.createElement('div');
     let removeButton = document.createElement('button');
 
-    textarea.dataset.role = role;
-    textareaWrapper.classList.add('textarea-wrapper', 'fadeIn');
-    textarea.classList = 'new-input';
-    textarea.placeholder = role;
-    textarea.value = defaultText; // Set default text
+    newElement.dataset.role = role;
+    newElementWrapper.classList.add('newElement-wrapper', 'fadeIn');
+    newElement.classList = 'new-input';
+    newElement.setAttribute('contentEditable', 'true');
+    newElement.textContent = defaultText; // Set default text
     removeButton.classList.add('remove-textarea'); 
     removeButton.innerText = '—'; 
     removeButton.title = "Remove this box"; 
     
-    textareaWrapper.appendChild(textarea);
-    textareaWrapper.appendChild(removeButton);
-    messageContainer.appendChild(textareaWrapper);
+    newElementWrapper.appendChild(newElement);
+    newElementWrapper.appendChild(removeButton);
+    messageContainer.appendChild(newElementWrapper);
 
-    let oldText = defaultText;  // this will hold the previous input value
+    let oldText = defaultText;
 
     messages.push(oldText);
-    autoExpand(textarea);
+    newElement.addEventListener('input', () => {
+        let newText = newElement.textContent;
 
-    textarea.addEventListener('input', () => {
-        let newText = textarea.value;
         const index = messages.indexOf(oldText);
         if (index !== -1) {
             messages[index] = newText;
         }
         oldText = newText;
-        textareaWrapper.style.height = `${textarea.scrollHeight + 40}px`;
-        autoExpand(textarea);
         console.log(messages);
+        autoExpand(newElement);
     });
 
-    textareaWrapper.style.height = `${textarea.scrollHeight + 40}px`;
-
     removeButton.addEventListener('click', function () {
-        textareaWrapper.style.animation = "fadeOut 0.6s ease-in forwards";
+        newElementWrapper.style.animation = "fadeOut 0.6s ease-in forwards";
         setTimeout(function(){
-            messageContainer.removeChild(textareaWrapper);
+            messageContainer.removeChild(newElementWrapper);
         }, 600);
 
         const index = messages.indexOf(oldText);
         if (index !== -1) {
             messages.splice(index, 1);
         }
-
         console.log(messages);
     });
+    return newElement;
 }
 
 userButton.addEventListener("click", function(event) {
@@ -201,7 +198,19 @@ document.getElementById('send-button').addEventListener('click', function() {
         .then(response => response.json())
         .then(data => {
             if (data['choices'] && data['choices'][0] && data['choices'][0]['message']) {
-                createNewTextArea('Assistant', data['choices'][0]['message']['content']);
+                const messageContent = data['choices'][0]['message']['content'];
+                const newDiv = createNewTextArea('Assistant', messageContent); 
+                // Check if the message includes any LaTeX symbols
+                let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
+                let includesMath = mathSymbols.some(symbol => messageContent.includes(symbol));
+                if (includesMath) {
+                    // Call MathJax to typeset the newly added message
+                    MathJax.typesetPromise().then(() => {
+                        // When MathJax has completed typesetting
+                        // we can correctly calculate the new height
+                        autoExpand(newDiv);
+                    });
+                }
             } else {
                 console.error('API response does not contain the assistant’s reply.');
             }
