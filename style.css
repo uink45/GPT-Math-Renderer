@@ -173,6 +173,11 @@ h1 {
     height: 30px;
 }
 
+.dark-mode #system-input{
+    background-color: #494949;
+    color: #fff;
+}
+
 .dark-mode .settings-icon {
     background-color: #1f1f1f;
     color: #fff;

@@ -3,6 +3,7 @@ let settingsPane = document.getElementById('settings-pane');
 let overlay = document.querySelector('#overlay');
 let inputField = document.getElementById('openai-key');
 let darkModeToggle = document.getElementById('dark-mode');
+let systemInput = document.getElementById('system-input');
 let bodyElement = document.getElementsByTagName('body')[0];
 let title = document.querySelector("h1");
 
@@ -69,6 +70,7 @@ slider.addEventListener("click", function() {
     darkModeToggle.checked = !darkModeToggle.checked;
     if(darkModeToggle.checked) {
         bodyElement.classList.add("dark-mode");
+        systemInput.classList.add("dark-mode");
         title.classList.add("dark-mode");
         button.classList.add("dark-mode");
         localStorage.setItem("darkMode", 'true');
@@ -76,6 +78,7 @@ slider.addEventListener("click", function() {
         bodyElement.classList.remove("dark-mode");
         title.classList.remove("dark-mode");
         button.classList.remove("dark-mode");
+        systemInput.classList.add("dark-mode");
         localStorage.setItem("darkMode", 'false');
     }
 });
