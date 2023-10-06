@@ -1,35 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.js" async></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Singularity</title>
     <link rel="stylesheet" href="style.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        tex2jax: {
-          inlineMath: [['$','$'], ['\\(','\\)']],
-          processEscapes: true
-        }
-      });
-    </script>
 </head>
 <body>
-  <div class="main-container">
-    <div class="container" id="container">
-        <textarea id="system-input"></textarea>
-        <div id="sidebox">
-            <h3>Settings</h3>
-            <p>Model</p>
-            <p>Count</p>
+    <div class="settings-icon">•••</div>
+    <div class="container">
+        <div class="title-container">
+            <h1>Singularity</h1>
         </div>
+        <textarea id="system-input" placeholder="You are a helpful assistant."></textarea>
     </div>
-    <div class="input-wrapper"> 
-      <button class="styled-button" id="addInputButton">Add Input</button>
-      <button class="styled-button" id="addOutputButton">Add Output</button>
-      <button class="styled-button" id="sendButton">Send</button> 
-    </div>  
-  </div>
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
