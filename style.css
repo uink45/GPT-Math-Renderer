@@ -72,3 +72,8 @@ h1 {
     background-color: #1f1f1f;
     color: white;
 }
+
+.settings-icon.active {
+    background-color: #1f1f1f;
+    color: white;
+}
