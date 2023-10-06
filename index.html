@@ -17,8 +17,13 @@
     <div id="settings-icon" class="settings-icon">•••</div>
     <div id="overlay" class="overlay"></div>
     <div id="settings-pane" class="settings-pane">
-        <label for="openai-key">OpenAI Key</label>
-        <input type="text" id="openai-key" class="input-field">
+        <label for="openai-key" class="openai-key-label">OpenAI Key</label>
+        <input type="password"  type="text" id="openai-key" class="input-field">
+        <label class="dark-label" for="dark-mode">Dark Mode</label>
+        <div class="switch">
+            <input type="checkbox" id="dark-mode" class="dark-mode-toggle">
+            <span class="slider"></span>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
