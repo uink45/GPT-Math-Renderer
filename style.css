@@ -68,6 +68,13 @@ h1 {
     transition: background-color 0.5s;
 }
 
+/* The CSS rules inside this block will only apply to devices with a max-width of 768px (generally tablets and mobile devices) */
+@media screen and (max-width: 768px) {
+    .settings-icon {
+        top: 20px;
+    }
+}
+
 .settings-icon:hover {
     background-color: #1f1f1f;
     color: white;
