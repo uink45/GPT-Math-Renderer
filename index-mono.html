@@ -396,7 +396,7 @@
             <div class="title-container">
                 <h1>Singularity</h1>
             </div>
-            <textarea id="system-input" placeholder="You are a helpful assistant. For any mathematical text, you must use the Latex syntax using any of the symbols ['\\(', '\\)', '\\[', '\\]', '$$'] in your response."></textarea>
+            <textarea id="system-input" placeholder="You will explain things really well in a conversational manner, just like a human speaking. Before moving on to the next, you must ask the person if they are ready to move to the next. For any mathematical text, you must use the Latex syntax using any of the symbols ['\\(', '\\)', '\\[', '\\]', '$$'] in your response."></textarea>
             <div id="message-container"></div>   
             <div class="button-container">
                 <button id="user-button" class="user">User</button>
@@ -417,7 +417,7 @@
         </div>
     </div>
     <script>
-        let button = document.querySelector(".settings-icon");
+       let button = document.querySelector(".settings-icon");
         let settingsPane = document.getElementById('settings-pane');
         let overlay = document.querySelector('#overlay');
         let inputField = document.getElementById('openai-key');
@@ -607,6 +607,7 @@
                 }
                 console.log(messages);
             });
+
             return newElement;
         }
 

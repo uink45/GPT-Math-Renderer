@@ -188,6 +188,7 @@ function createNewTextArea(role, defaultText = '') {
         }
         console.log(messages);
     });
+
     return newElement;
 }
 
