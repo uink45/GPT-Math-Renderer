@@ -54,20 +54,7 @@ window.onload = function() {
 
 // Save chat history before unloading the page
 window.onbeforeunload = function() {
-    let chatHistory = messages.map((message, index) => {
-        let role;
-        if (index === 0) {
-            role = 'System';
-        } else {
-            const textarea = Array.from(document.querySelectorAll('.new-input'))[index - 1];
-            role = textarea.dataset.role;
-        }
-        return {
-            role: role,
-            content: message
-        };
-    });
-    localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+    chatHistory();
 };
 
 
@@ -144,6 +131,23 @@ function autoExpand(element) {
     }
 }
 
+function chatHistory(){
+    let chatHistory = messages.map((message, index) => {
+        let role;
+        if (index === 0) {
+            role = 'System';
+        } else {
+            const textarea = Array.from(document.querySelectorAll('.new-input'))[index - 1];
+            role = textarea.dataset.role;
+        }
+        return {
+            role: role,
+            content: message
+        };
+    });
+    localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+}
+
 function createNewTextArea(role, defaultText = '') {
     let newElement = document.createElement('div');
     let newElementWrapper = document.createElement('div');
@@ -174,6 +178,18 @@ function createNewTextArea(role, defaultText = '') {
         }
         oldText = newText;
         autoExpand(newElement);
+        chatHistory();
+    });
+    newElement.addEventListener('input', () => {
+        let newText = newElement.textContent;
+
+        const index = messages.indexOf(oldText);
+        if (index !== -1) {
+            messages[index] = newText;
+        }
+        oldText = newText;
+        autoExpand(newElement);
+        chatHistory();
     });
 
     removeButton.addEventListener('click', function () {
@@ -286,6 +302,7 @@ document.getElementById('send-button').addEventListener('click', function() {
                         autoExpand(newDiv);
                     });
                 }
+                chatHistory();
             });
     })
     .catch((error) => {
