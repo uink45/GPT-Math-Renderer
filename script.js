@@ -205,13 +205,11 @@ document.getElementById('send-button').addEventListener('click', function() {
                 let includesMath = mathSymbols.some(symbol => messageContent.includes(symbol));
                 if (includesMath) {
                     // Call MathJax to typeset the newly added message
-                    MathJax.typesetPromise().then(() => {
-                        // When MathJax has completed typesetting
-                        // we can correctly calculate the new height
-                        autoExpand(newDiv);
+                    MathJax.typesetPromise().then(() => {                
                         console.log(messages);
                     });
                 }
+                autoExpand(newDiv);
             } else {
                 console.error('API response does not contain the assistant’s reply.');
             }
