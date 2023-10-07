@@ -473,22 +473,8 @@
 
         // Save chat history before unloading the page
         window.onbeforeunload = function() {
-            let chatHistory = messages.map((message, index) => {
-                let role;
-                if (index === 0) {
-                    role = 'System';
-                } else {
-                    const textarea = Array.from(document.querySelectorAll('.new-input'))[index - 1];
-                    role = textarea.dataset.role;
-                }
-                return {
-                    role: role,
-                    content: message
-                };
-            });
-            localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+            saveChatHistory();
         };
-
 
         button.addEventListener("click", function(event) {
             event.stopPropagation();
@@ -561,6 +547,23 @@
             if (element.scrollHeight > element.clientHeight) {
                 element.style.height = element.scrollHeight + 2 + 'px';
             }
+        }
+
+        function saveChatHistory(){
+            let chatHistory = messages.map((message, index) => {
+                let role;
+                if (index === 0) {
+                    role = 'System';
+                } else {
+                    const textarea = Array.from(document.querySelectorAll('.new-input'))[index - 1];
+                    role = textarea.dataset.role;
+                }
+                return {
+                    role: role,
+                    content: message
+                };
+            });
+            localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
         }
 
         function createNewTextArea(role, defaultText = '') {
