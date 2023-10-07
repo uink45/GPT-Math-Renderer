@@ -5,7 +5,6 @@ let inputField = document.getElementById('openai-key');
 let darkModeToggle = document.getElementById('dark-mode');
 let systemInput = document.getElementById('system-input');
 let userButton = document.getElementById('user-button');
-let assistantButton = document.getElementById('assistant-button');
 let messageContainer = document.getElementById('message-container');
 let bodyElement = document.getElementsByTagName('body')[0];
 let title = document.querySelector("h1");
@@ -13,6 +12,7 @@ let messages = [(systemInput.placeholder !== '') ? systemInput.placeholder : sys
 let paneIsOpen = false; 
 
 window.onload = function() {
+    autoExpand(systemInput);
     let storedKey = localStorage.getItem("openAIKey");
     if(storedKey) { 
         inputField.value = storedKey;
@@ -115,7 +115,6 @@ function createNewTextArea(role, defaultText = '') {
     newElement.setAttribute('contentEditable', 'true');
     newElement.textContent = defaultText; // Set default text
     removeButton.classList.add('remove-textarea'); 
-    removeButton.innerText = '—'; 
     removeButton.title = "Remove this box"; 
     
     newElementWrapper.appendChild(newElement);
@@ -133,10 +132,9 @@ function createNewTextArea(role, defaultText = '') {
             messages[index] = newText;
         }
         oldText = newText;
-        console.log(messages);
         autoExpand(newElement);
     });
-    
+
     newElement.addEventListener('paste', (e) => {
         e.preventDefault();
         const text = (e.originalEvent || e).clipboardData.getData('text/plain');
@@ -160,10 +158,6 @@ function createNewTextArea(role, defaultText = '') {
 
 userButton.addEventListener("click", function(event) {
     createNewTextArea('User');
-});
-
-assistantButton.addEventListener("click", function(event) {
-    createNewTextArea('Assistant');
 });
 
 systemInput.addEventListener('input', function () {
@@ -215,6 +209,7 @@ document.getElementById('send-button').addEventListener('click', function() {
                         // When MathJax has completed typesetting
                         // we can correctly calculate the new height
                         autoExpand(newDiv);
+                        console.log(messages);
                     });
                 }
             } else {
