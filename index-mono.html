@@ -555,6 +555,12 @@
                 autoExpand(newElement);
             });
 
+            newElement.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+                document.execCommand('insertText', false, text);
+            });
+
             removeButton.addEventListener('click', function () {
                 newElementWrapper.style.animation = "fadeOut 0.6s ease-in forwards";
                 setTimeout(function(){
