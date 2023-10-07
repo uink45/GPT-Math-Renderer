@@ -5,25 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Singularity</title>
-    <script async src="es5/tex-mml-chtml.js" id="MathJax-script"></script>
+    <script async src="es5/tex-chtml-full.js" id="MathJax-script"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.js" async></script>-->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="inner-container">
-        <div class="container">
-            <div class="title-container">
-                <h1>Singularity</h1>
-            </div>
-            <textarea id="system-input" placeholder="You are a helpful assistant. For any mathematical text, you must use the Latex syntax using any of the symbols ['\\(', '\\)', '\\[', '\\]', '$$'] in your response."></textarea>
-            <div id="message-container"></div>   
-            <div class="button-container">
-                <button id="user-button" class="user">User</button>
-                <button id="assistant-button" class="assistant">Assistant</button>
-                <button id="send-button" class="send">Send</button>
-            </div>    
+    <div class="container">
+        <div class="title-container">
+            <h1>Singularity</h1>
         </div>
+        <textarea id="system-input" placeholder="You are a helpful assistant. For any mathematical text, you must use the Latex syntax using any of the symbols ['\\(', '\\)', '\\[', '\\]', '$$'] in your response."></textarea>
+        <div id="message-container"></div>   
+        <div class="button-container">
+            <button id="user-button" class="user">User</button>
+            <button id="assistant-button" class="assistant">Assistant</button>
+            <button id="send-button" class="send">Send</button>
+        </div>    
     </div>
-
     <div id="settings-icon" class="settings-icon">•••</div>
     <div id="overlay" class="overlay"></div>
     <div id="settings-pane" class="settings-pane">
@@ -38,3 +36,5 @@
     <script src="script.js"></script>
 </body>
 </html>
+
+

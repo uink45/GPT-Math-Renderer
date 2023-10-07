@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Singularity</title>
+    <!--<script async src="es5/tex-chtml-full.js" id="MathJax-script"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.js" async></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            background-color: #fff;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2em; 
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            width: 90vh;
+            max-width: 90vw;
+            margin-top: 20px;
+        }
+
+        .user {
+            margin-right: 20px;
+        }
+
+        .assistant {
+            margin-right: 20px;
+        }
+
+        .user, .assistant, .send {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 1.0rem;
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.5s ease;
+        }
+
+        .user:hover, .assistant:hover, .send:hover {
+            background-color: #ffffff;
+            color: #2196F3;
+        }
+
+        #system-input {
+            width: 90vh;
+            max-width: 90vw;
+            height: 20vh; 
+            background-color: #f5f5f7;
+            color: #1f1f1f;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            margin-top: 15px;
+            overflow: auto;
+            white-space: pre-wrap;
+            border: 1px solid transparent; 
+            font-family: inherit; 
+            resize: none; 
+            transition: border 0.5s ease-out; 
+        }
+
+        #system-input:focus {
+            outline: none; 
+            border: 1px solid #1f1f1f; 
+        }
+
+        .new-input {
+            width: 90vh;
+            max-width: 90vw;
+            height: 65px; 
+            background-color: #f5f5f7;
+            color: #1f1f1f;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            overflow: auto;
+            white-space: pre-wrap;
+            border: 1px solid transparent; 
+            font-family: inherit; 
+            resize: none; 
+            transition: border 0.5s ease-out; 
+        }
+
+        .textarea-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: -20px;
+        }
+
+        #message-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 2.5rem;
+            color: #1f1f1f;
+        }
+
+        .settings-icon {
+            position: absolute;
+            top: 40px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            border: 1px solid #1f1f1f;
+            border-radius: 10px;
+            background-color: #f5f5f7;
+            text-align: center;
+            line-height: 40px;
+            padding-bottom: 3px;
+            transition: background-color 0.5s;
+        }
+
+        @media screen and (max-width: 768px) {
+            .settings-icon {
+                top: 30px;
+            }
+        }
+
+        .settings-icon:hover {
+            background-color: #1f1f1f;
+            color: white;
+        }
+
+        .settings-icon.active {
+            background-color: #1f1f1f;
+            color: white;
+        }
+
+        @keyframes fadeInBlur {
+            0% {
+                opacity: 0;
+                filter: blur(10px);
+            }
+            100% {
+                opacity: 1;
+                filter: blur(0);
+            }
+        }
+
+        @keyframes fadeOutBlur {
+            0% {
+                opacity: 1;
+                filter: blur(0);
+            }
+            100% {
+                opacity: 0;
+                filter: blur(10px);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateX(-100px);}
+            to {opacity: 1; transform: translateX(0);}
+        }
+
+        @keyframes fadeOut {
+            from {opacity: 1; transform: translateX(0);}
+            to {opacity: 0; transform: translateX(100px);}
+        }
+
+        .fadeIn {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+            .overlay {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            }
+        }
+
+        .overlay.exit {
+            animation: fadeOutBlur 0.5s linear forwards;
+        }
+
+        .settings-pane.exit {
+            animation: fadeOutBlur 0.5s linear forwards;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(182, 182, 182, 0.5);
+            z-index: 2; 
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            animation: fadeInBlur 0.5s linear forwards;
+        }
+
+        .settings-pane {
+            display: none;
+            position: fixed;
+            top: 40vh;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 270px;
+            background-color: white;
+            border-radius: 10px;
+            z-index: 3; 
+            animation: fadeInBlur 0.5s linear forwards; 
+        }
+
+        .settings-pane label, .settings-pane .input-field {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .settings-pane .openai-key-label {
+            top: 20%;  
+            font-size: 1.5rem;
+        }
+
+        .settings-pane .input-field {
+            top: 38%;  
+            border: 1px solid #b0b0b0;
+            border-radius: 5px;
+            padding-left: 5px;
+            width: 220px;
+            letter-spacing: 2px; 
+            height: 30px;
+        }
+
+        .dark-mode #system-input{
+            background-color: #494949;
+            color: #fff;
+        }
+
+        .dark-mode .new-input {
+            background-color: #494949;
+            color: #fff;
+        }
+
+        .dark-mode .settings-icon {
+            background-color: #1f1f1f;
+            color: #fff;
+            border: 1px solid #fff;
+        }
+
+        .dark-mode .settings-icon:hover {
+            background-color: #fff;
+            color: #1f1f1f;
+        }
+
+        .dark-mode .settings-icon.active {
+            background-color: #fff;
+            color: #1f1f1f;
+        }
+
+        .dark-mode .settings-pane label {
+            color: #000;
+        }
+
+        .dark-label {
+            position: absolute;
+            font-size: 1.5rem;
+            margin-top: 30px;
+        }
+
+        .dark-mode {
+            background-color: #1f1f1f;
+            color: #fff;
+        }
+
+        .dark-mode h1 {
+            color: #fff;
+        }
+
+        .switch {
+            position: absolute;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            left: 120px;
+            margin-top: 200px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        .remove-textarea {
+            background-color: #f5f5f7;
+            height: 25px;
+            width: 25px;
+            right: 0;
+            top: 30%;
+            position: absolute;
+            border-radius: 2px;
+            text-align: center;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            color: #2196F3;
+            transition: background-color 0.3s ease;
+        }
+
+        .remove-textarea:hover {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .remove-textarea:focus { 
+            outline:none; 
+        }
+
+        .newElement-wrapper {
+            position: relative;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="inner-container">
+        <div class="container">
+            <div class="title-container">
+                <h1>Singularity</h1>
+            </div>
+            <textarea id="system-input" placeholder="You are a helpful assistant. For any mathematical text, you must use the Latex syntax using any of the symbols ['\\(', '\\)', '\\[', '\\]', '$$'] in your response."></textarea>
+            <div id="message-container"></div>   
+            <div class="button-container">
+                <button id="user-button" class="user">User</button>
+                <button id="assistant-button" class="assistant">Assistant</button>
+                <button id="send-button" class="send">Send</button>
+            </div>    
+        </div>
+    </div>
+    <div id="settings-icon" class="settings-icon">•••</div>
+    <div id="overlay" class="overlay"></div>
+    <div id="settings-pane" class="settings-pane">
+        <label for="openai-key" class="openai-key-label">OpenAI Key</label>
+        <input type="password"  type="text" id="openai-key" class="input-field">
+        <label class="dark-label" for="dark-mode">Dark Mode</label>
+        <div class="switch">
+            <input type="checkbox" id="dark-mode" class="dark-mode-toggle">
+            <span class="slider"></span>
+        </div>
+    </div>
+    <script>
+        let button = document.querySelector(".settings-icon");
+        let settingsPane = document.getElementById('settings-pane');
+        let overlay = document.querySelector('#overlay');
+        let inputField = document.getElementById('openai-key');
+        let darkModeToggle = document.getElementById('dark-mode');
+        let systemInput = document.getElementById('system-input');
+        let userButton = document.getElementById('user-button');
+        let assistantButton = document.getElementById('assistant-button');
+        let messageContainer = document.getElementById('message-container');
+        let bodyElement = document.getElementsByTagName('body')[0];
+        let title = document.querySelector("h1");
+        let messages = [(systemInput.placeholder !== '') ? systemInput.placeholder : systemInput.value];
+        let paneIsOpen = false; 
+
+        window.onload = function() {
+            let storedKey = localStorage.getItem("openAIKey");
+            if(storedKey) { 
+                inputField.value = storedKey;
+            }
+
+            let darkModeStored = localStorage.getItem("darkMode");
+            if(darkModeStored) {
+                if(darkModeStored === 'true') {
+                    darkModeToggle.checked = true;
+                    bodyElement.classList.add("dark-mode");
+                    title.classList.add("dark-mode");
+                    button.classList.add("dark-mode");
+                } else {
+                    darkModeToggle.checked = false;
+                }
+            }
+        }
+
+        button.addEventListener("click", function(event) {
+            event.stopPropagation();
+            if(!paneIsOpen) { 
+                settingsPane.style.display = 'block';
+                overlay.style.display = 'block';
+                button.classList.add("active");
+                settingsPane.classList.remove("exit");
+                overlay.classList.remove("exit");
+                paneIsOpen = true; 
+            } else {
+                settingsPane.classList.add("exit");
+                overlay.classList.add("exit");
+                setTimeout(function(){
+                    settingsPane.style.display = 'none';
+                    overlay.style.display = 'none';
+                }, 500);
+                button.classList.remove("active");
+                paneIsOpen = false;
+            }
+        });
+
+        overlay.addEventListener("click", function () {
+            settingsPane.classList.add("exit");
+            overlay.classList.add("exit");
+            setTimeout(function(){
+                settingsPane.style.display = 'none';
+                overlay.style.display = 'none';
+            }, 500);
+            button.classList.remove("active");
+            paneIsOpen = false;
+
+            localStorage.setItem("openAIKey", inputField.value);
+            localStorage.setItem("darkMode", darkModeToggle.checked);
+        });
+
+        let slider = document.querySelector('.slider');
+
+        slider.addEventListener("click", function() {
+            darkModeToggle.checked = !darkModeToggle.checked;
+            if(darkModeToggle.checked) {
+                bodyElement.classList.add("dark-mode");
+                systemInput.classList.add("dark-mode");
+                title.classList.add("dark-mode");
+                button.classList.add("dark-mode");
+
+                const textAreasDark = document.querySelectorAll('.new-input');
+                textAreasDark.forEach(textArea => {
+                    textArea.classList.add('dark-mode');
+                });
+
+                localStorage.setItem("darkMode", 'true');
+            } else {
+                bodyElement.classList.remove("dark-mode");
+                title.classList.remove("dark-mode");
+                button.classList.remove("dark-mode");
+                systemInput.classList.add("dark-mode");
+
+                const textAreasLight = document.querySelectorAll('.new-input');
+                textAreasLight.forEach(textArea => {
+                    textArea.classList.remove('dark-mode');
+                });
+
+                localStorage.setItem("darkMode", 'false');
+            }
+        });
+
+        function autoExpand(element) {
+            // Only adjust the height if there's an overflow
+            if (element.scrollHeight > element.clientHeight) {
+                element.style.height = element.scrollHeight + 2 + 'px';
+            }
+        }
+
+        function createNewTextArea(role, defaultText = '') {
+            let newElement = document.createElement('div');
+            let newElementWrapper = document.createElement('div');
+            let removeButton = document.createElement('button');
+
+            newElement.dataset.role = role;
+            newElementWrapper.classList.add('newElement-wrapper', 'fadeIn');
+            newElement.classList = 'new-input';
+            newElement.setAttribute('contentEditable', 'true');
+            newElement.textContent = defaultText; // Set default text
+            removeButton.classList.add('remove-textarea'); 
+            removeButton.innerText = '—'; 
+            removeButton.title = "Remove this box"; 
+            
+            newElementWrapper.appendChild(newElement);
+            newElementWrapper.appendChild(removeButton);
+            messageContainer.appendChild(newElementWrapper);
+
+            let oldText = defaultText;
+
+            messages.push(oldText);
+            newElement.addEventListener('input', () => {
+                let newText = newElement.textContent;
+
+                const index = messages.indexOf(oldText);
+                if (index !== -1) {
+                    messages[index] = newText;
+                }
+                oldText = newText;
+                autoExpand(newElement);
+            });
+
+            removeButton.addEventListener('click', function () {
+                newElementWrapper.style.animation = "fadeOut 0.6s ease-in forwards";
+                setTimeout(function(){
+                    messageContainer.removeChild(newElementWrapper);
+                }, 600);
+
+                const index = messages.indexOf(oldText);
+                if (index !== -1) {
+                    messages.splice(index, 1);
+                }
+                console.log(messages);
+            });
+            return newElement;
+        }
+
+        userButton.addEventListener("click", function(event) {
+            createNewTextArea('User');
+        });
+
+        assistantButton.addEventListener("click", function(event) {
+            createNewTextArea('Assistant');
+        });
+
+        systemInput.addEventListener('input', function () {
+            messages[0] = systemInput.value;
+        });
+
+        document.getElementById('send-button').addEventListener('click', function() {
+            const formattedMessages = messages.map((message, index) => {
+                let role;
+                if (index === 0) {
+                    role = 'system';
+                } else {
+                    const textarea = document.querySelectorAll('.new-input')[index - 1];
+                    role = textarea.dataset.role.toLowerCase();
+                }
+                return {
+                    role,
+                    content: message
+                };
+            });
+
+            const requestBody = {
+                model: 'gpt-4',
+                messages: formattedMessages,
+                stream: true,
+            };
+
+            const newDiv = createNewTextArea('Assistant', ''); 
+
+            fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${inputField.value}`
+                },
+                body: JSON.stringify(requestBody),
+            })
+            .then(response => {
+                const reader = response.body.getReader();
+                let partialData = '';
+                let includesMath = false;
+
+                reader.read()
+                    .then(function processStream({ done, value }) {
+                        partialData += new TextDecoder().decode(value);
+                        let newlineIndex;
+                        while ((newlineIndex = partialData.indexOf('\n')) !== -1) {
+                            let responseChunk = partialData.slice(0, newlineIndex);
+                            try {
+                                const trimmedData = responseChunk.replace('data: ', '').trim();
+                                const data = JSON.parse(trimmedData);
+
+                                if (data['choices'] && data['choices'][0] && data['choices'][0]['delta'] && data['choices'][0]['delta']['content']) {
+                                    const messageContent = data['choices'][0]['delta']['content'];
+                                    const index = messages.indexOf(newDiv.textContent);
+                                    newDiv.textContent += messageContent; 
+                                    
+                                    if(index !== -1){
+                                        messages[index] += messageContent; // Append the new text to the existing content
+                                    }
+
+                                    if (!includesMath) {
+                                        let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
+                                        includesMath = mathSymbols.some(symbol => messageContent.includes(symbol));
+                                    }
+
+                                } else if (data['choices'] && data['choices'][0] && data['choices'][0]['delta'] && data['choices'][0]['finish_reason']) {
+                                    if(data['choices'][0]['finish_reason'] === "stop") {
+                                        return;
+                                    }
+                                }
+                            } catch (e) {
+                            }
+
+                            autoExpand(newDiv);
+                            partialData = partialData.slice(newlineIndex + 1);
+                        }
+
+                        if (!done) {
+                            return reader.read().then(processStream);
+                        }
+                    })
+                    .then(() => {
+                        if (includesMath) {
+                            return MathJax.typesetPromise([newDiv]).then(() => {
+                                autoExpand(newDiv);
+                            });
+                        }
+                    });
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
+
+

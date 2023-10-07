@@ -133,7 +133,6 @@ function createNewTextArea(role, defaultText = '') {
             messages[index] = newText;
         }
         oldText = newText;
-        console.log(messages);
         autoExpand(newElement);
     });
 
@@ -165,7 +164,6 @@ systemInput.addEventListener('input', function () {
 });
 
 document.getElementById('send-button').addEventListener('click', function() {
-    // map the messages array to the needed format
     const formattedMessages = messages.map((message, index) => {
         let role;
         if (index === 0) {
@@ -180,42 +178,76 @@ document.getElementById('send-button').addEventListener('click', function() {
         };
     });
 
-    // prepare the body of the request
     const requestBody = {
         model: 'gpt-4',
-        messages: formattedMessages
+        messages: formattedMessages,
+        stream: true,
     };
 
-    // use Fetch API to send a request
+    const newDiv = createNewTextArea('Assistant', ''); 
+
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${inputField.value}` // get the API Key from the settings
+            'Authorization': `Bearer ${inputField.value}`
         },
         body: JSON.stringify(requestBody),
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data['choices'] && data['choices'][0] && data['choices'][0]['message']) {
-                const messageContent = data['choices'][0]['message']['content'];
-                const newDiv = createNewTextArea('Assistant', messageContent); 
-                // Check if the message includes any LaTeX symbols
-                let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
-                let includesMath = mathSymbols.some(symbol => messageContent.includes(symbol));
+    .then(response => {
+        const reader = response.body.getReader();
+        let partialData = '';
+        let includesMath = false;
+
+        reader.read()
+            .then(function processStream({ done, value }) {
+                partialData += new TextDecoder().decode(value);
+                let newlineIndex;
+                while ((newlineIndex = partialData.indexOf('\n')) !== -1) {
+                    let responseChunk = partialData.slice(0, newlineIndex);
+                    try {
+                        const trimmedData = responseChunk.replace('data: ', '').trim();
+                        const data = JSON.parse(trimmedData);
+
+                        if (data['choices'] && data['choices'][0] && data['choices'][0]['delta'] && data['choices'][0]['delta']['content']) {
+                            const messageContent = data['choices'][0]['delta']['content'];
+                            const index = messages.indexOf(newDiv.textContent);
+                            newDiv.textContent += messageContent; 
+                            
+                            if(index !== -1){
+                                messages[index] += messageContent; // Append the new text to the existing content
+                            }
+
+                            if (!includesMath) {
+                                let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
+                                includesMath = mathSymbols.some(symbol => messageContent.includes(symbol));
+                            }
+
+                        } else if (data['choices'] && data['choices'][0] && data['choices'][0]['delta'] && data['choices'][0]['finish_reason']) {
+                            if(data['choices'][0]['finish_reason'] === "stop") {
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                    }
+
+                    autoExpand(newDiv);
+                    partialData = partialData.slice(newlineIndex + 1);
+                }
+
+                if (!done) {
+                    return reader.read().then(processStream);
+                }
+            })
+            .then(() => {
                 if (includesMath) {
-                    // Call MathJax to typeset the newly added message
-                    MathJax.typesetPromise().then(() => {
-                        // When MathJax has completed typesetting
-                        // we can correctly calculate the new height
+                    return MathJax.typesetPromise([newDiv]).then(() => {
                         autoExpand(newDiv);
                     });
                 }
-            } else {
-                console.error('API response does not contain the assistant’s reply.');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+            });
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 });
