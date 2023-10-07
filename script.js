@@ -29,7 +29,47 @@ window.onload = function() {
             darkModeToggle.checked = false;
         }
     }
+
+    // Load chat history
+    let chatHistory = JSON.parse(localStorage.getItem("chatHistory"));
+
+    if(chatHistory && chatHistory.length > 0) {
+        systemInput.value = chatHistory[0]["content"] || "";
+
+        for(let i = 1; i < chatHistory.length; i++) {
+            let chatItem = chatHistory[i];
+            createNewTextArea(chatItem["role"], chatItem["content"]);
+
+            // Apply mathjax typesetting
+            let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
+            let includesMath = mathSymbols.some(symbol => chatItem["content"].includes(symbol));
+            if (includesMath) {
+                MathJax.typesetPromise([document.querySelectorAll('.new-input')[i - 1]]).then(() => {
+                    autoExpand(document.querySelectorAll('.new-input')[i - 1]);
+                });
+            }
+        }
+    }
 }
+
+// Save chat history before unloading the page
+window.onbeforeunload = function() {
+    let chatHistory = messages.map((message, index) => {
+        let role;
+        if (index === 0) {
+            role = 'System';
+        } else {
+            const textarea = Array.from(document.querySelectorAll('.new-input'))[index - 1];
+            role = textarea.dataset.role;
+        }
+        return {
+            role: role,
+            content: message
+        };
+    });
+    localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+};
+
 
 button.addEventListener("click", function(event) {
     event.stopPropagation();
