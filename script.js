@@ -29,34 +29,7 @@ window.onload = function() {
             darkModeToggle.checked = false;
         }
     }
-
-    // Load chat history
-    let chatHistory = JSON.parse(localStorage.getItem("chatHistory"));
-
-    if(chatHistory && chatHistory.length > 0) {
-        systemInput.value = chatHistory[0]["content"] || "";
-
-        for(let i = 1; i < chatHistory.length; i++) {
-            let chatItem = chatHistory[i];
-            createNewTextArea(chatItem["role"], chatItem["content"]);
-
-            // Apply mathjax typesetting
-            let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
-            let includesMath = mathSymbols.some(symbol => chatItem["content"].includes(symbol));
-            if (includesMath) {
-                MathJax.typesetPromise([document.querySelectorAll('.new-input')[i - 1]]).then(() => {
-                    autoExpand(document.querySelectorAll('.new-input')[i - 1]);
-                });
-            }
-        }
-    }
 }
-
-// Save chat history before unloading the page
-window.onbeforeunload = function() {
-    chatHistory();
-};
-
 
 button.addEventListener("click", function(event) {
     event.stopPropagation();
@@ -131,23 +104,6 @@ function autoExpand(element) {
     }
 }
 
-function chatHistory(){
-    let chatHistory = messages.map((message, index) => {
-        let role;
-        if (index === 0) {
-            role = 'System';
-        } else {
-            const textarea = Array.from(document.querySelectorAll('.new-input'))[index - 1];
-            role = textarea.dataset.role;
-        }
-        return {
-            role: role,
-            content: message
-        };
-    });
-    localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-}
-
 function createNewTextArea(role, defaultText = '') {
     let newElement = document.createElement('div');
     let newElementWrapper = document.createElement('div');
@@ -177,19 +133,14 @@ function createNewTextArea(role, defaultText = '') {
             messages[index] = newText;
         }
         oldText = newText;
+        console.log(messages);
         autoExpand(newElement);
-        chatHistory();
     });
-    newElement.addEventListener('input', () => {
-        let newText = newElement.textContent;
-
-        const index = messages.indexOf(oldText);
-        if (index !== -1) {
-            messages[index] = newText;
-        }
-        oldText = newText;
-        autoExpand(newElement);
-        chatHistory();
+    
+    newElement.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+        document.execCommand('insertText', false, text);
     });
 
     removeButton.addEventListener('click', function () {
@@ -204,7 +155,6 @@ function createNewTextArea(role, defaultText = '') {
         }
         console.log(messages);
     });
-
     return newElement;
 }
 
@@ -221,6 +171,7 @@ systemInput.addEventListener('input', function () {
 });
 
 document.getElementById('send-button').addEventListener('click', function() {
+    // map the messages array to the needed format
     const formattedMessages = messages.map((message, index) => {
         let role;
         if (index === 0) {
@@ -235,77 +186,42 @@ document.getElementById('send-button').addEventListener('click', function() {
         };
     });
 
+    // prepare the body of the request
     const requestBody = {
         model: 'gpt-4',
-        messages: formattedMessages,
-        stream: true,
+        messages: formattedMessages
     };
 
-    const newDiv = createNewTextArea('Assistant', ''); 
-
+    // use Fetch API to send a request
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${inputField.value}`
+            'Authorization': `Bearer ${inputField.value}` // get the API Key from the settings
         },
         body: JSON.stringify(requestBody),
     })
-    .then(response => {
-        const reader = response.body.getReader();
-        let partialData = '';
-        let includesMath = false;
-
-        reader.read()
-            .then(function processStream({ done, value }) {
-                partialData += new TextDecoder().decode(value);
-                let newlineIndex;
-                while ((newlineIndex = partialData.indexOf('\n')) !== -1) {
-                    let responseChunk = partialData.slice(0, newlineIndex);
-                    try {
-                        const trimmedData = responseChunk.replace('data: ', '').trim();
-                        const data = JSON.parse(trimmedData);
-
-                        if (data['choices'] && data['choices'][0] && data['choices'][0]['delta'] && data['choices'][0]['delta']['content']) {
-                            const messageContent = data['choices'][0]['delta']['content'];
-                            const index = messages.indexOf(newDiv.textContent);
-                            newDiv.textContent += messageContent; 
-                            
-                            if(index !== -1){
-                                messages[index] += messageContent; // Append the new text to the existing content
-                            }
-
-                            if (!includesMath) {
-                                let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
-                                includesMath = mathSymbols.some(symbol => messageContent.includes(symbol));
-                            }
-
-                        } else if (data['choices'] && data['choices'][0] && data['choices'][0]['delta'] && data['choices'][0]['finish_reason']) {
-                            if(data['choices'][0]['finish_reason'] === "stop") {
-                                return;
-                            }
-                        }
-                    } catch (e) {
-                    }
-
-                    autoExpand(newDiv);
-                    partialData = partialData.slice(newlineIndex + 1);
-                }
-
-                if (!done) {
-                    return reader.read().then(processStream);
-                }
-            })
-            .then(() => {
+        .then(response => response.json())
+        .then(data => {
+            if (data['choices'] && data['choices'][0] && data['choices'][0]['message']) {
+                const messageContent = data['choices'][0]['message']['content'];
+                const newDiv = createNewTextArea('Assistant', messageContent); 
+                // Check if the message includes any LaTeX symbols
+                let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
+                let includesMath = mathSymbols.some(symbol => messageContent.includes(symbol));
                 if (includesMath) {
-                    return MathJax.typesetPromise([newDiv]).then(() => {
+                    // Call MathJax to typeset the newly added message
+                    MathJax.typesetPromise().then(() => {
+                        // When MathJax has completed typesetting
+                        // we can correctly calculate the new height
                         autoExpand(newDiv);
                     });
                 }
-                chatHistory();
-            });
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+            } else {
+                console.error('API response does not contain the assistant’s reply.');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
 });
