@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Singularity</title>
-    <!--<script async src="es5/tex-chtml-full.js" id="MathJax-script"></script>-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.js" async></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
             background-color: #fff;
-            align-items: flex-start;
-            justify-content: center;
+            display: block;  
         }
 
         .container {
@@ -22,6 +22,7 @@
             flex-direction: column;
             align-items: center;
             padding: 2em; 
+            max-width: 100vw;
         }
 
         .button-container {
@@ -58,7 +59,7 @@
 
         #system-input {
             width: 90vh;
-            max-width: 90vw;
+            max-width: 100vw;
             height: 20vh; 
             background-color: #f5f5f7;
             color: #1f1f1f;
@@ -82,7 +83,7 @@
 
         .new-input {
             width: 90vh;
-            max-width: 90vw;
+            max-width: 100vw;
             height: 65px; 
             background-color: #f5f5f7;
             color: #1f1f1f;
@@ -96,6 +97,11 @@
             font-family: inherit; 
             resize: none; 
             transition: border 0.5s ease-out; 
+        }
+
+        .new-input:focus {
+            outline: none; 
+            border: 1px solid #1f1f1f; 
         }
 
         .textarea-wrapper {
@@ -131,7 +137,6 @@
             width: 40px;
             height: 40px;
             font-size: 1.5rem;
-            border: 1px solid #1f1f1f;
             border-radius: 10px;
             background-color: #f5f5f7;
             text-align: center;
@@ -259,9 +264,14 @@
             height: 30px;
         }
 
-        .dark-mode #system-input{
+        .dark-mode #system-input {
             background-color: #494949;
             color: #fff;
+        }
+
+        .dark-mode #system-input:focus {
+            outline: none; 
+            border: 1px solid #ffffff; 
         }
 
         .dark-mode .new-input {
@@ -269,10 +279,14 @@
             color: #fff;
         }
 
+        .dark-mode .new-input:focus {
+            outline: none; 
+            border: 1px solid #ffffff; 
+        }
+
         .dark-mode .settings-icon {
-            background-color: #1f1f1f;
+            background-color: #494949;
             color: #fff;
-            border: 1px solid #fff;
         }
 
         .dark-mode .settings-icon:hover {
@@ -312,13 +326,13 @@
             left: 120px;
             margin-top: 200px;
         }
-
+        
         .switch input { 
             opacity: 0;
             width: 0;
             height: 0;
         }
-
+        
         .slider {
             position: absolute;
             cursor: pointer;
@@ -331,7 +345,7 @@
             transition: .4s;
             border-radius: 50px;
         }
-
+        
         .slider:before {
             position: absolute;
             content: "";
@@ -344,29 +358,29 @@
             transition: .4s;
             border-radius: 50%;
         }
-
+        
         input:checked + .slider {
             background-color: #2196F3;
         }
-
+        
         input:focus + .slider {
             box-shadow: 0 0 1px #2196F3;
         }
-
+        
         input:checked + .slider:before {
             -webkit-transform: translateX(26px);
             -ms-transform: translateX(26px);
             transform: translateX(26px);
         }
-
+        
         .remove-textarea {
             background-color: #f5f5f7;
-            height: 25px;
-            width: 25px;
-            right: 0;
+            height: 20px;
+            width: 20px;
+            right: -10px;
             top: 30%;
             position: absolute;
-            border-radius: 2px;
+            border-radius: 15px;
             text-align: center;
             font-weight: bold;
             border: none;
@@ -388,6 +402,7 @@
             position: relative;
             margin: 10px 0;
         }
+
     </style>
 </head>
 <body>
@@ -400,7 +415,6 @@
             <div id="message-container"></div>   
             <div class="button-container">
                 <button id="user-button" class="user">User</button>
-                <button id="assistant-button" class="assistant">Assistant</button>
                 <button id="send-button" class="send">Send</button>
             </div>    
         </div>
@@ -417,7 +431,7 @@
         </div>
     </div>
     <script>
-       let button = document.querySelector(".settings-icon");
+        let button = document.querySelector(".settings-icon");
         let settingsPane = document.getElementById('settings-pane');
         let overlay = document.querySelector('#overlay');
         let inputField = document.getElementById('openai-key');
@@ -428,7 +442,7 @@
         let messageContainer = document.getElementById('message-container');
         let bodyElement = document.getElementsByTagName('body')[0];
         let title = document.querySelector("h1");
-        let messages = [(systemInput.placeholder !== '') ? systemInput.placeholder : systemInput.value];
+        let messages = [(systemInput.placeholder !== '') ? {text: systemInput.placeholder, element: systemInput} : {text: systemInput.value, element: systemInput}];
         let paneIsOpen = false; 
 
         window.onload = function() {
@@ -448,6 +462,7 @@
                     darkModeToggle.checked = false;
                 }
             }
+            autoExpand(systemInput);
         }
 
         button.addEventListener("click", function(event) {
@@ -532,24 +547,28 @@
             newElementWrapper.classList.add('newElement-wrapper', 'fadeIn');
             newElement.classList = 'new-input';
             newElement.setAttribute('contentEditable', 'true');
-            newElement.textContent = defaultText; // Set default text
+            newElement.textContent = defaultText; 
             removeButton.classList.add('remove-textarea'); 
-            removeButton.innerText = '—'; 
             removeButton.title = "Remove this box"; 
-            
             newElementWrapper.appendChild(newElement);
             newElementWrapper.appendChild(removeButton);
             messageContainer.appendChild(newElementWrapper);
 
             let oldText = defaultText;
+            messages.push({
+                text: oldText,
+                element: newElement
+            });
 
-            messages.push(oldText);
             newElement.addEventListener('input', () => {
                 let newText = newElement.textContent;
 
-                const index = messages.indexOf(oldText);
-                if (index !== -1) {
-                    messages[index] = newText;
+                const messageObj = messages.find(msg => msg.element === newElement);
+                if (messageObj) {
+                    messageObj.text = newText;
+                }
+                else{
+                    console.log("Message not found", oldText);
                 }
                 oldText = newText;
                 autoExpand(newElement);
@@ -559,6 +578,7 @@
                 e.preventDefault();
                 const text = (e.originalEvent || e).clipboardData.getData('text/plain');
                 document.execCommand('insertText', false, text);
+                autoExpand(newElement);
             });
 
             removeButton.addEventListener('click', function () {
@@ -567,9 +587,12 @@
                     messageContainer.removeChild(newElementWrapper);
                 }, 600);
 
-                const index = messages.indexOf(oldText);
-                if (index !== -1) {
-                    messages.splice(index, 1);
+                const messageObj = messages.find(msg => msg.element === newElement);
+                if (messageObj) {
+                    messages.splice(messages.indexOf(messageObj), 1);
+                }
+                else{
+                    console.log("Message not found", oldText);
                 }
                 console.log(messages);
             });
@@ -581,26 +604,22 @@
             createNewTextArea('User');
         });
 
-        assistantButton.addEventListener("click", function(event) {
-            createNewTextArea('Assistant');
-        });
-
         systemInput.addEventListener('input', function () {
             messages[0] = systemInput.value;
         });
 
         document.getElementById('send-button').addEventListener('click', function() {
-            const formattedMessages = messages.map((message, index) => {
+            const formattedMessages = messages.map((messageObj, index) => {
                 let role;
                 if (index === 0) {
                     role = 'system';
                 } else {
                     const textarea = document.querySelectorAll('.new-input')[index - 1];
-                    role = textarea.dataset.role.toLowerCase();
+                    role = messageObj.element.dataset.role.toLowerCase();
                 }
                 return {
                     role,
-                    content: message
+                    content: messageObj.text
                 };
             });
 
@@ -637,11 +656,11 @@
 
                                 if (data['choices'] && data['choices'][0] && data['choices'][0]['delta'] && data['choices'][0]['delta']['content']) {
                                     const messageContent = data['choices'][0]['delta']['content'];
-                                    const index = messages.indexOf(newDiv.textContent);
-                                    newDiv.textContent += messageContent; 
+                                    const messageObj = messages.find(msg => msg.element === newDiv);
+                                    newDiv.textContent += messageContent;
                                     
-                                    if(index !== -1){
-                                        messages[index] += messageContent; // Append the new text to the existing content
+                                    if(messageObj){
+                                        messageObj.text += messageContent;  // Append the new text to the existing content
                                     }
 
                                     if (!includesMath) {
@@ -655,6 +674,7 @@
                                     }
                                 }
                             } catch (e) {
+                            
                             }
 
                             autoExpand(newDiv);
@@ -666,11 +686,8 @@
                         }
                     })
                     .then(() => {
-                        if (includesMath) {
-                            return MathJax.typesetPromise([newDiv]).then(() => {
-                                autoExpand(newDiv);
-                            });
-                        }
+                        renderMathInElement(newDiv); // Here is the modified line
+                        autoExpand(newDiv);
                     });
             })
             .catch((error) => {

@@ -200,17 +200,11 @@ document.getElementById('send-button').addEventListener('click', function() {
             if (data['choices'] && data['choices'][0] && data['choices'][0]['message']) {
                 const messageContent = data['choices'][0]['message']['content'];
                 const newDiv = createNewTextArea('Assistant', messageContent); 
-                // Check if the message includes any LaTeX symbols
-                let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
-                let includesMath = mathSymbols.some(symbol => messageContent.includes(symbol));
-                if (includesMath) {
-                    // Call MathJax to typeset the newly added message
-                    MathJax.typesetPromise().then(() => {                
-                        console.log(messages);
-                    });
-                }
                 autoExpand(newDiv);
-            } else {
+                renderMathInElement(document.body);
+                console.log(messages);
+            } 
+            else {
                 console.error('API response does not contain the assistant’s reply.');
             }
         })
