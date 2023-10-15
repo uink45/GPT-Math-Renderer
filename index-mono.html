@@ -35,13 +35,17 @@
 
         .user {
             margin-right: 20px;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.5s ease;
         }
 
-        .assistant {
-            margin-right: 20px;
-        }
-
-        .user, .assistant, .send {
+        .send{
             border: none;
             border-radius: 20px;
             padding: 10px 20px;
@@ -52,7 +56,7 @@
             transition: background-color 0.5s ease;
         }
 
-        .user:hover, .assistant:hover, .send:hover {
+        .user:hover, .send:hover {
             background-color: #ffffff;
             color: #2196F3;
         }
@@ -382,8 +386,8 @@
             background-color: #bcbcbc;
             height: 20px;
             width: 20px;
-            right: -10px;
-            top:0px;
+            right: -9px;
+            top: -5px;
             position: absolute;
             border-radius: 17px;
             text-align: center;
@@ -395,7 +399,7 @@
         }
 
         .remove-textarea:hover {
-            background-color: #2196F3;
+            background-color: #f33621;
             color: white;
         }
 
@@ -416,10 +420,10 @@
             <div class="title-container">
                 <h1>Singularity</h1>
             </div>
-            <textarea id="system-input" placeholder="You will explain things really well in a conversational manner, just like a human speaking. Before moving on to the next, you must ask the person if they are ready to move to the next. You must use Latex syntax using any of the symbols ['\\(', '\\)', '\\[', '\\]', '$$'] in your response for mathematical text."></textarea>
+            <textarea id="system-input" placeholder="You will explain things really well in a conversational manner, just like a human speaking. Before moving on to the next, you must ask the person if they are ready to move to the next. You must use the Latex syntax that can be rendered by Katex using any of the symbols ['\\(', '\\)', '\\[', '\\]', '$$']."></textarea>
             <div id="message-container"></div>   
             <div class="button-container">
-                <button id="user-button" class="user">User</button>
+                <button id="user-button" class="user">+</button>
                 <button id="send-button" class="send">Send</button>
             </div>    
         </div>
@@ -610,7 +614,10 @@
         });
 
         systemInput.addEventListener('input', function () {
-            messages[0] = systemInput.value;
+            messages[0] = { 
+                text: systemInput.value, 
+                element: systemInput 
+            };
         });
 
         document.getElementById('send-button').addEventListener('click', function() {
