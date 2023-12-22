@@ -5,14 +5,14 @@ let inputField = document.getElementById('openai-key');
 let darkModeToggle = document.getElementById('dark-mode');
 let systemInput = document.getElementById('system-input');
 let userButton = document.getElementById('user-button');
+let assistantButton = document.getElementById('assistant-button');
 let messageContainer = document.getElementById('message-container');
 let bodyElement = document.getElementsByTagName('body')[0];
 let title = document.querySelector("h1");
-let messages = [(systemInput.placeholder !== '') ? systemInput.placeholder : systemInput.value];
+let messages = [(systemInput.placeholder !== '') ? {text: systemInput.placeholder, element: systemInput} : {text: systemInput.value, element: systemInput}];
 let paneIsOpen = false; 
 
 window.onload = function() {
-    autoExpand(systemInput);
     let storedKey = localStorage.getItem("openAIKey");
     if(storedKey) { 
         inputField.value = storedKey;
@@ -29,6 +29,7 @@ window.onload = function() {
             darkModeToggle.checked = false;
         }
     }
+    autoExpand(systemInput);
 }
 
 button.addEventListener("click", function(event) {
@@ -113,23 +114,28 @@ function createNewTextArea(role, defaultText = '') {
     newElementWrapper.classList.add('newElement-wrapper', 'fadeIn');
     newElement.classList = 'new-input';
     newElement.setAttribute('contentEditable', 'true');
-    newElement.textContent = defaultText; // Set default text
+    newElement.textContent = defaultText; 
     removeButton.classList.add('remove-textarea'); 
     removeButton.title = "Remove this box"; 
-    
     newElementWrapper.appendChild(newElement);
     newElementWrapper.appendChild(removeButton);
     messageContainer.appendChild(newElementWrapper);
 
     let oldText = defaultText;
+    messages.push({
+        text: oldText,
+        element: newElement
+    });
 
-    messages.push(oldText);
     newElement.addEventListener('input', () => {
         let newText = newElement.textContent;
 
-        const index = messages.indexOf(oldText);
-        if (index !== -1) {
-            messages[index] = newText;
+        const messageObj = messages.find(msg => msg.element === newElement);
+        if (messageObj) {
+            messageObj.text = newText;
+        }
+        else{
+            console.log("Message not found", oldText);
         }
         oldText = newText;
         autoExpand(newElement);
@@ -139,6 +145,7 @@ function createNewTextArea(role, defaultText = '') {
         e.preventDefault();
         const text = (e.originalEvent || e).clipboardData.getData('text/plain');
         document.execCommand('insertText', false, text);
+        autoExpand(newElement);
     });
 
     removeButton.addEventListener('click', function () {
@@ -147,12 +154,16 @@ function createNewTextArea(role, defaultText = '') {
             messageContainer.removeChild(newElementWrapper);
         }, 600);
 
-        const index = messages.indexOf(oldText);
-        if (index !== -1) {
-            messages.splice(index, 1);
+        const messageObj = messages.find(msg => msg.element === newElement);
+        if (messageObj) {
+            messages.splice(messages.indexOf(messageObj), 1);
+        }
+        else{
+            console.log("Message not found", oldText);
         }
         console.log(messages);
     });
+
     return newElement;
 }
 
@@ -161,54 +172,95 @@ userButton.addEventListener("click", function(event) {
 });
 
 systemInput.addEventListener('input', function () {
-    messages[0] = systemInput.value;
+    messages[0] = { 
+        text: systemInput.value, 
+        element: systemInput 
+    };
 });
 
 document.getElementById('send-button').addEventListener('click', function() {
-    // map the messages array to the needed format
-    const formattedMessages = messages.map((message, index) => {
+    const formattedMessages = messages.map((messageObj, index) => {
         let role;
         if (index === 0) {
             role = 'system';
         } else {
             const textarea = document.querySelectorAll('.new-input')[index - 1];
-            role = textarea.dataset.role.toLowerCase();
+            role = messageObj.element.dataset.role.toLowerCase();
         }
         return {
             role,
-            content: message
+            content: messageObj.text
         };
     });
 
-    // prepare the body of the request
     const requestBody = {
-        model: 'gpt-4',
-        messages: formattedMessages
+        model: 'gpt-4-1106-preview',
+        messages: formattedMessages,
+        stream: true,
     };
 
-    // use Fetch API to send a request
+    const newDiv = createNewTextArea('Assistant', ''); 
+
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${inputField.value}` // get the API Key from the settings
+            'Authorization': `Bearer ${inputField.value}`
         },
         body: JSON.stringify(requestBody),
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data['choices'] && data['choices'][0] && data['choices'][0]['message']) {
-                const messageContent = data['choices'][0]['message']['content'];
-                const newDiv = createNewTextArea('Assistant', messageContent); 
+    .then(response => {
+        const reader = response.body.getReader();
+        let partialData = '';
+        let includesMath = false;
+
+        reader.read()
+            .then(function processStream({ done, value }) {
+                partialData += new TextDecoder().decode(value);
+                let newlineIndex;
+                while ((newlineIndex = partialData.indexOf('\n')) !== -1) {
+                    let responseChunk = partialData.slice(0, newlineIndex);
+                    try {
+                        const trimmedData = responseChunk.replace('data: ', '').trim();
+                        const data = JSON.parse(trimmedData);
+
+                        if (data['choices'] && data['choices'][0] && data['choices'][0]['delta'] && data['choices'][0]['delta']['content']) {
+                            const messageContent = data['choices'][0]['delta']['content'];
+                            const messageObj = messages.find(msg => msg.element === newDiv);
+                            newDiv.textContent += messageContent;
+                            
+                            if(messageObj){
+                                messageObj.text += messageContent;  // Append the new text to the existing content
+                            }
+
+                            if (!includesMath) {
+                                let mathSymbols = ['\\(', '\\)', '\\[', '\\]', '$$'];
+                                includesMath = mathSymbols.some(symbol => messageContent.includes(symbol));
+                            }
+
+                        } else if (data['choices'] && data['choices'][0] && data['choices'][0]['delta'] && data['choices'][0]['finish_reason']) {
+                            if(data['choices'][0]['finish_reason'] === "stop") {
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                    
+                    }
+
+                    autoExpand(newDiv);
+                    partialData = partialData.slice(newlineIndex + 1);
+                }
+
+                if (!done) {
+                    return reader.read().then(processStream);
+                }
+            })
+            .then(() => {
+                renderMathInElement(newDiv); // Here is the modified line
                 autoExpand(newDiv);
-                renderMathInElement(document.body);
-                console.log(messages);
-            } 
-            else {
-                console.error('API response does not contain the assistant’s reply.');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+            });
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 });
