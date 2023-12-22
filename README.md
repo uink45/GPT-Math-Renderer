@@ -14,7 +14,7 @@ GPT-Math-Renderer is a simple web app designed to facilitate natural conversatio
 
 1. Clone the repository or download the given HTML file to your system.
 2. Click on the `index.html` file to open the application in a web browser.
-3. Enter the OpenAI API key in the settings pane which can be accessed by clicking the "•••" button on the main interface.
+3. Enter your OpenAI API key in the settings pane which can be accessed by clicking the "•••" button on the main interface.
 4. Toggle the switch in the settings pane for dark/light mode as per your preference.
 
 ## Usage
