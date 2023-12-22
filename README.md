@@ -2,7 +2,7 @@
 
 ## Overview
 
-GPT-Math-Renderer is a simple web app designed to facilitate natural conversations on any topic, with the capability to visualize mathematical text using the KaTeX library. This app utilizes the GPT-4 Turbo model from OpenAI to generate responses.
+GPT-Math-Renderer is a simple web app designed to facilitate natural conversations on any topic, with the capability to visualize mathematical text using the KaTeX library. This app uses the GPT-4 Turbo model from OpenAI to generate responses.
 
 ## Features
 
@@ -19,11 +19,11 @@ GPT-Math-Renderer is a simple web app designed to facilitate natural conversatio
 
 ## Usage
 
-- If needed, type your instructions in the system textarea, which prompts the AI on how to respond.
 - Add additional text fields for user inputs by clicking the "+" button.
 - Click "Send" to submit the conversation to the AI and receive a response.
 - The AI's response will appear in a new text area below the user's input fields.
 - The app automatically identifies and renders LaTeX mathematical expressions within the responses.
+- If needed, feel free to modify the system-level prompt by entering your instructions in the textarea provided. This will guide the AI on how to respond
 
 ## Requirements
 
