@@ -27,10 +27,17 @@
 
         .button-container {
             display: flex;
+            align-items: center;
             justify-content: center;
             width: 90vh;
             max-width: 100%;
             margin-top: 20px;
+        }
+
+        .extract-button-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .user {
@@ -45,7 +52,54 @@
             transition: background-color 0.5s ease;
         }
 
-        .send{
+        .extract {
+            margin-right: 20px;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.5s ease;
+        }
+
+        .send {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1.0rem;
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.5s ease;
+        }
+
+        .send-image {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1.0rem;
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.5s ease;
+            margin-right: 20px;
+        }
+
+        .clear-content {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1.0rem;
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.5s ease;
+            margin-right: 20px;
+        }
+
+        .copy-content {
             border: none;
             border-radius: 20px;
             padding: 10px 20px;
@@ -212,7 +266,7 @@
             animation: fadeOutBlur 0.5s linear forwards;
         }
 
-        .settings-pane.exit {
+        .extract-pane.exit, .settings-pane.exit {
             animation: fadeOutBlur 0.5s linear forwards;
         }
 
@@ -244,6 +298,45 @@
             border-radius: 10px;
             z-index: 3; 
             animation: fadeInBlur 0.5s linear forwards; 
+        }
+
+        .extract-pane {
+            display: none;
+            position: fixed;
+            top: 40vh;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            width: 900px;
+            height: 50vh;
+            background-color: white;
+            border-radius: 10px;
+            z-index: 3; 
+            animation: fadeInBlur 0.5s linear forwards; 
+            padding: 10px;
+        }
+
+        .extract-text-title {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .extract-text-subtitle {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 300;
+            color: #bcbcbc;
+        }
+
+        .image-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px; 
+            height: 200px; 
+            background-color: #f5f5f7;
+            border-radius: 10px;
         }
 
         .settings-pane label, .settings-pane .input-field {
@@ -423,7 +516,8 @@
             <textarea id="system-input" placeholder="You will have a natural conversation about any topic. When explaining things, you will need to make sure your responses are correct. You must responses must sound a bit casual and conversational. You must only respond in paragraphs. You must NOT use dot or numbered points in your responses. For outputting any mathematical text, you must use the Latex syntax using any of the symbols ['\(', '\)', '\[', '\]', '$$']."></textarea>
             <div id="message-container"></div>   
             <div class="button-container">
-                <button id="user-button" class="user">+</button>
+                <button id="user-button" class="user">Add Message</button>
+                <button id="extract-button" class="extract">Extract Text</button>
                 <button id="send-button" class="send">Send</button>
             </div>    
         </div>
@@ -439,7 +533,18 @@
             <span class="slider"></span>
         </div>
     </div>
+    <div id="extract-pane" class="extract-pane" style="display: none;">
+        <h1 class="extract-text-title">Extract Text From Image</h1>
+        <h3 class="extract-text-subtitle">Click anywhere below to paste the copied image</h3>
+        <div id="image-input-container" class="image-input-container" contenteditable="false" onclick="pasteClipboardContent(event)"></div>
+        <div id="send-image-button-container" class="extract-button-container">
+            <button id="clear-content-button" class="clear-content">Clear</button>
+            <button id="send-image-button" class="send-image">Send</button>
+            <button id="copy-content-button" class="copy-content">Copy</button>
+        </div>
+    </div>
     <script>
+        let slider = document.querySelector('.slider');
         let button = document.querySelector(".settings-icon");
         let settingsPane = document.getElementById('settings-pane');
         let overlay = document.querySelector('#overlay');
@@ -447,6 +552,8 @@
         let darkModeToggle = document.getElementById('dark-mode');
         let systemInput = document.getElementById('system-input');
         let userButton = document.getElementById('user-button');
+        let extractButton = document.getElementById('extract-button');
+        let extractPane = document.getElementById('extract-pane');
         let assistantButton = document.getElementById('assistant-button');
         let messageContainer = document.getElementById('message-container');
         let bodyElement = document.getElementsByTagName('body')[0];
@@ -454,97 +561,33 @@
         let messages = [(systemInput.placeholder !== '') ? {text: systemInput.placeholder, element: systemInput} : {text: systemInput.value, element: systemInput}];
         let paneIsOpen = false; 
 
-        window.onload = function() {
-            let storedKey = localStorage.getItem("openAIKey");
-            if(storedKey) { 
-                inputField.value = storedKey;
-            }
+        function pasteClipboardContent(event) {
+            // Prevent default behavior
+            event.preventDefault();
 
-            let darkModeStored = localStorage.getItem("darkMode");
-            if(darkModeStored) {
-                if(darkModeStored === 'true') {
-                    darkModeToggle.checked = true;
-                    bodyElement.classList.add("dark-mode");
-                    title.classList.add("dark-mode");
-                    button.classList.add("dark-mode");
-                } else {
-                    darkModeToggle.checked = false;
+            // Use the Clipboard API to read the clipboard content
+            navigator.clipboard.read().then((items) => {
+                // Process each item in the clipboard
+                for (const item of items) {
+                    for (const type of item.types) {
+                        // Check for image types
+                        if (type.startsWith("image/")) {
+                            // Get the image blob, create an object URL and display the image
+                            item.getType(type).then((blob) => {
+                                const img = document.createElement("img");
+                                img.src = URL.createObjectURL(blob);
+                                img.style.width = "300px"; // Set width to fit container
+                                img.style.height = "200px"; // Set height to auto
+                                img.style.borderRadius = "10px"; // Optional: Style the image
+                                document.getElementById("image-input-container").appendChild(img);
+                            });
+                        }
+                        // You could extend this to handle other types, such as text/plain
+                    }
                 }
-            }
-            autoExpand(systemInput);
-        }
-
-        button.addEventListener("click", function(event) {
-            event.stopPropagation();
-            if(!paneIsOpen) { 
-                settingsPane.style.display = 'block';
-                overlay.style.display = 'block';
-                button.classList.add("active");
-                settingsPane.classList.remove("exit");
-                overlay.classList.remove("exit");
-                paneIsOpen = true; 
-            } else {
-                settingsPane.classList.add("exit");
-                overlay.classList.add("exit");
-                setTimeout(function(){
-                    settingsPane.style.display = 'none';
-                    overlay.style.display = 'none';
-                }, 500);
-                button.classList.remove("active");
-                paneIsOpen = false;
-            }
-        });
-
-        overlay.addEventListener("click", function () {
-            settingsPane.classList.add("exit");
-            overlay.classList.add("exit");
-            setTimeout(function(){
-                settingsPane.style.display = 'none';
-                overlay.style.display = 'none';
-            }, 500);
-            button.classList.remove("active");
-            paneIsOpen = false;
-
-            localStorage.setItem("openAIKey", inputField.value);
-            localStorage.setItem("darkMode", darkModeToggle.checked);
-        });
-
-        let slider = document.querySelector('.slider');
-
-        slider.addEventListener("click", function() {
-            darkModeToggle.checked = !darkModeToggle.checked;
-            if(darkModeToggle.checked) {
-                bodyElement.classList.add("dark-mode");
-                systemInput.classList.add("dark-mode");
-                title.classList.add("dark-mode");
-                button.classList.add("dark-mode");
-
-                const textAreasDark = document.querySelectorAll('.new-input');
-                textAreasDark.forEach(textArea => {
-                    textArea.classList.add('dark-mode');
-                });
-
-                localStorage.setItem("darkMode", 'true');
-            } else {
-                bodyElement.classList.remove("dark-mode");
-                title.classList.remove("dark-mode");
-                button.classList.remove("dark-mode");
-                systemInput.classList.add("dark-mode");
-
-                const textAreasLight = document.querySelectorAll('.new-input');
-                textAreasLight.forEach(textArea => {
-                    textArea.classList.remove('dark-mode');
-                });
-
-                localStorage.setItem("darkMode", 'false');
-            }
-        });
-
-        function autoExpand(element) {
-            // Only adjust the height if there's an overflow
-            if (element.scrollHeight > element.clientHeight) {
-                element.style.height = element.scrollHeight + 2 + 'px';
-            }
+            }).catch((error) => {
+                console.error('Could not read from clipboard: ', error);
+            });
         }
 
         function createNewTextArea(role, defaultText = '') {
@@ -609,6 +652,201 @@
             return newElement;
         }
 
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                console.log('Async: Copying to clipboard was successful!');
+            }, function(err) {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+
+        function autoExpand(element) {
+            // Only adjust the height if there's an overflow
+            if (element.scrollHeight > element.clientHeight) {
+                element.style.height = element.scrollHeight + 2 + 'px';
+            }
+        }
+
+        function getImageDataUrl(imgElement, callback) {
+            // Create an off-screen canvas
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set the canvas dimensions to the size of the image
+            canvas.width = imgElement.naturalWidth;
+            canvas.height = imgElement.naturalHeight;
+
+            // Draw the image onto the canvas
+            ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+
+            // Attempt to get the data URL in JPEG format
+            try {
+                const dataUrl = canvas.toDataURL('image/jpeg');
+                callback(dataUrl);
+            } catch (err) {
+                callback(null, err);
+            }
+        }
+
+        function encodeImageAndSend() {
+            const img = document.querySelector('#image-input-container img');
+            if (!img) {
+                console.error('No image found to encode');
+                return;
+            }
+
+            getImageDataUrl(img, (dataUrl, err) => {
+                if (err) {
+                    console.error('Error converting image to Data URL:', err);
+                    return;
+                }
+                const base64Image = dataUrl.split(',')[1]; 
+
+                // Prepare the request payload
+                const requestBody = {
+                    "model": "gpt-4-vision-preview",
+                    "messages": [
+                        {
+                        "role": "user",
+                        "content": [
+                                {
+                                    "type": "text",
+                                    "text": "Only reply with the text contained in it. Do not give any other information. If it contains mathematical text, reply in Latex."
+                                    },
+                                    {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": `data:image/jpeg;base64,${base64Image}`,
+                                        "detail": "high"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "max_tokens": 3000
+                };
+
+                // Send the request
+                fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${inputField.value}`
+                    },
+                    body: JSON.stringify(requestBody),
+                }).then(response => response.json())
+                    .then(data => document.getElementById('image-input-container').innerHTML = data['choices'][0].message.content)
+                    .catch((error) => console.error('Error:', error));
+            });
+        }
+
+        window.onload = function() {
+            let storedKey = localStorage.getItem("openAIKey");
+            if(storedKey) { 
+                inputField.value = storedKey;
+            }
+
+            let darkModeStored = localStorage.getItem("darkMode");
+            if(darkModeStored) {
+                if(darkModeStored === 'true') {
+                    darkModeToggle.checked = true;
+                    bodyElement.classList.add("dark-mode");
+                    title.classList.add("dark-mode");
+                    button.classList.add("dark-mode");
+                } else {
+                    darkModeToggle.checked = false;
+                }
+            }
+            autoExpand(systemInput);
+        }
+
+        button.addEventListener("click", function(event) {
+            event.stopPropagation();
+            if(!paneIsOpen) { 
+                settingsPane.style.display = 'block';
+                overlay.style.display = 'block';
+                button.classList.add("active");
+                settingsPane.classList.remove("exit");
+                overlay.classList.remove("exit");
+                paneIsOpen = true; 
+            } else {
+                settingsPane.classList.add("exit");
+                overlay.classList.add("exit");
+                setTimeout(function(){
+                    settingsPane.style.display = 'none';
+                    overlay.style.display = 'none';
+                }, 500);
+                button.classList.remove("active");
+                paneIsOpen = false;
+            }
+        });
+
+        extractButton.addEventListener("click", function(event) {
+            event.stopPropagation();
+            extractPane.style.display = 'block';
+            overlay.style.display = 'block';
+            overlay.classList.remove("exit");
+            extractPane.classList.remove("exit");
+            paneIsOpen = true; 
+        });
+
+        overlay.addEventListener("click", function () {
+            if (paneIsOpen) {
+                if (settingsPane.style.display === 'block') {
+                    settingsPane.classList.add("exit");
+                    button.classList.remove("active");
+                    localStorage.setItem("openAIKey", inputField.value);
+                    localStorage.setItem("darkMode", darkModeToggle.checked);
+                }
+                if (extractPane.style.display === 'block') {
+                    extractPane.classList.add("exit");
+                }
+
+                overlay.classList.add("exit");
+
+                setTimeout(function(){
+                    if (settingsPane.style.display === 'block') {
+                        settingsPane.style.display = 'none';
+                    }
+                    if (extractPane.style.display === 'block') {
+                        extractPane.style.display = 'none';
+                    }
+                    overlay.style.display = 'none';
+                }, 500);
+
+                paneIsOpen = false;
+            }
+        });
+
+        slider.addEventListener("click", function() {
+            darkModeToggle.checked = !darkModeToggle.checked;
+            if(darkModeToggle.checked) {
+                bodyElement.classList.add("dark-mode");
+                systemInput.classList.add("dark-mode");
+                title.classList.add("dark-mode");
+                button.classList.add("dark-mode");
+
+                const textAreasDark = document.querySelectorAll('.new-input');
+                textAreasDark.forEach(textArea => {
+                    textArea.classList.add('dark-mode');
+                });
+
+                localStorage.setItem("darkMode", 'true');
+            } else {
+                bodyElement.classList.remove("dark-mode");
+                title.classList.remove("dark-mode");
+                button.classList.remove("dark-mode");
+                systemInput.classList.add("dark-mode");
+
+                const textAreasLight = document.querySelectorAll('.new-input');
+                textAreasLight.forEach(textArea => {
+                    textArea.classList.remove('dark-mode');
+                });
+
+                localStorage.setItem("darkMode", 'false');
+            }
+        });
+
         userButton.addEventListener("click", function(event) {
             createNewTextArea('User');
         });
@@ -618,6 +856,23 @@
                 text: systemInput.value, 
                 element: systemInput 
             };
+        });
+
+        document.getElementById('copy-content-button').addEventListener('click', function() {
+            var content = document.getElementById('image-input-container').innerText;
+            copyToClipboard(content);
+        });
+
+        document.getElementById('clear-content-button').addEventListener('click', function() {
+            // Select the container that holds the content
+            var imageInputContainer = document.getElementById('image-input-container');
+            
+            // Clear the content by setting the innerHTML to an empty string
+            imageInputContainer.innerHTML = '';
+        });
+
+        document.getElementById('send-image-button').addEventListener('click', function() {
+            encodeImageAndSend();
         });
 
         document.getElementById('send-button').addEventListener('click', function() {
