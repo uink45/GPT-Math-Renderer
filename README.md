@@ -20,7 +20,7 @@ GPT-Math-Renderer is a simple web app designed to facilitate natural conversatio
 
 ## Usage
 
-- Add additional text fields for user inputs by clicking the "+" button.
+- Add additional text fields for user inputs by clicking the "Add Message" button.
 - Click "Send" to submit the conversation to the AI and receive a response.
 - The AI's response will appear in a new text area below the user's input fields.
 - The app automatically identifies and renders LaTeX mathematical expressions within the responses.
