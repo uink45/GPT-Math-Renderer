@@ -679,10 +679,8 @@
         }
 
         function autoExpand(element) {
-            // Only adjust the height if there's an overflow
-            if (element.scrollHeight > element.clientHeight) {
-                element.style.height = element.scrollHeight + 2 + 'px';
-            }
+            element.style.height = 'auto';
+            element.style.height = element.scrollHeight + 'px';
         }
 
         function getImageDataUrl(imgElement, callback) {
