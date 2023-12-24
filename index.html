@@ -575,8 +575,8 @@
                             item.getType(type).then((blob) => {
                                 const img = document.createElement("img");
                                 img.src = URL.createObjectURL(blob);
-                                img.style.width = "300px"; // Set width to fit container
-                                img.style.height = "200px"; // Set height to auto
+                                img.style.width = "200px"; // Set width to fit container
+                                img.style.height = "90px"; // Set height to auto
                                 img.style.borderRadius = "10px"; // Optional: Style the image
                                 document.getElementById("image-input-container").appendChild(img);
                             });
