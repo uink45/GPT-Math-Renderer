@@ -7,6 +7,7 @@ GPT-Math-Renderer is a simple web app designed to facilitate natural conversatio
 ## Features
 
 - Support for rendering mathematical expressions written in LaTeX format.
+- Support for extracting text from image using the GPT Vision model.
 - Responsive design for both desktop and mobile devices.
 - Dark mode toggle for a user-friendly interface experience.
 
